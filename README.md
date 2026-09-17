@@ -23,3 +23,11 @@ This directory contains the SQL scripts to initialize and seed the **EventHub** 
 mysql -u root -p < database/schema.sql
 mysql -u root -p < database/seed.sql
 ```
+
+## Demo Accounts (seed data)
+
+| Email               | Role     | Password     |
+|---------------------|----------|--------------|
+| demo@eventhub.com   | CUSTOMER | Password123! |
+| vendor@eventhub.com | VENDOR   | Password123! |
+| admin@eventhub.com  | ADMIN    | Password123! |
