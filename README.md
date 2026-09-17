@@ -31,3 +31,9 @@ mysql -u root -p < database/seed.sql
 | demo@eventhub.com   | CUSTOMER | Password123! |
 | vendor@eventhub.com | VENDOR   | Password123! |
 | admin@eventhub.com  | ADMIN    | Password123! |
+
+## Business Rules (from `.env.example`)
+
+- `COMMISSION_RATE` = 0.10 (platform commission per booking)
+- `ADVANCE_PAYMENT_RATE` = 0.20 (20% advance at booking)
+- `PLATFORM_CANCELLATION_FEE` = 2000.00 (deducted on cancellation)
