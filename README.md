@@ -16,3 +16,10 @@ This directory contains the SQL scripts to initialize and seed the **EventHub** 
 
 - `schema.sql`: Contains the complete relational schema with 10 tables (`users`, `vendors`, `venues`, `vendor_services`, `events`, `event_vendors`, `bookings`, `payments`, `refunds`, and `reviews`).
 - `seed.sql`: Realistic seed dataset featuring 16+ Tier-2 and Tier-3 vendors across Bihar (Patna, Gaya, Muzaffarpur, Bhagalpur, Begusarai, Nalanda, Sheikhpura) and demo accounts.
+
+## Quick Setup (MySQL CLI)
+
+```bash
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/seed.sql
+```
