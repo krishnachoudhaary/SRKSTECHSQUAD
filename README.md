@@ -7,3 +7,7 @@ EventHub is an all-in-one event planning, vendor discovery, comparison, and book
 Traditional event directories merely list vendor contact numbers and leave users to guess prices, handle fragmentation, and blindly juggle budgets.
 
 "EventHub doesn't just help users FIND vendors — it helps them PLAN their entire event within their budget."
+
+## EventHub Database Guide
+
+This directory contains the SQL scripts to initialize and seed the **EventHub** relational database.
