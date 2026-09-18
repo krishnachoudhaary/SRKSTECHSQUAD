@@ -1,62 +1,28 @@
-import os
-import jwt
 from functools import wraps
 from flask import request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from utils.helpers import error_response
+from config.db_config import SessionLocal
 from models.models import User
 
-JWT_SECRET = os.getenv('JWT_SECRET', 'eventhub_super_secret_jwt_key_for_tier_2_3_bihar_event_planning_2026')
-JWT_ALGORITHM = 'HS256'
-
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            return error_response("Authentication token is missing", 401)
-        
-        parts = auth_header.split()
-        if len(parts) != 2 or parts[0].lower() != 'bearer':
-            return error_response("Invalid authorization format. Expected: Bearer <token>", 401)
-
-        token = parts[1]
+def jwt_required_custom(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-            user = User.query.get(payload.get('user_id'))
-            if not user:
-                return error_response("User not found or deactivated", 401)
-            request.current_user = user
-        except jwt.ExpiredSignatureError:
-            return error_response("Token has expired. Please log in again", 401)
-        except jwt.InvalidTokenError:
-            return error_response("Invalid or corrupted token", 401)
-        
-        return f(*args, **kwargs)
-    return decorated
-
-def jwt_required_custom(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            return error_response("Authentication token is missing", 401)
-        
-        parts = auth_header.split()
-        if len(parts) != 2 or parts[0].lower() != 'bearer':
-            return error_response("Invalid authorization format. Expected: Bearer <token>", 401)
-
-        token = parts[1]
-        try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-            user_id = payload.get('user_id') or payload.get('id')
-            user = User.query.get(user_id)
-            if not user:
-                return error_response("User not found or deactivated", 401)
-            request.current_user = user
-        except jwt.ExpiredSignatureError:
-            return error_response("Token has expired. Please log in again", 401)
-        except jwt.InvalidTokenError:
-            return error_response("Invalid or corrupted token", 401)
-        
-        return f(user, *args, **kwargs)
-    return decorated
+            verify_jwt_in_request()
+            user_id = get_jwt_identity()
+            
+            db = SessionLocal()
+            try:
+                # user_id in JWT identity might be string or int
+                current_user = db.query(User).filter(User.id == int(user_id)).first()
+                if not current_user:
+                    return error_response("User account not found or deactivated", 401)
+                
+                # Pass current_user to controller function
+                return fn(current_user=current_user, *args, **kwargs)
+            finally:
+                db.close()
+        except Exception as e:
+            return error_response(f"Authentication token invalid or expired: {str(e)}", 401)
+    return wrapper

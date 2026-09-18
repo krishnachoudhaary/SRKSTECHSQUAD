@@ -1,64 +1,129 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, UserCheck } from 'lucide-react';
+import { Calendar, Lock, Mail, User, ShieldCheck } from 'lucide-react';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = async (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrorMessage('');
+    setLoading(true);
+
     const res = await login(email, password);
+    setLoading(false);
+
     if (res.success) {
-      navigate(res.user.role === 'VENDOR' ? '/vendor-dashboard' : '/dashboard');
+      const from = location.state?.from?.pathname || (res.user?.role === 'VENDOR' ? '/vendor/dashboard' : '/planner');
+      navigate(from, { replace: true });
     } else {
-      setError(res.message || 'Login failed.');
+      setErrorMessage(res.message || 'Invalid email or password.');
     }
   };
 
-  const handleDemoFill = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
+  const handleDemoFill = (role) => {
+    if (role === 'CUSTOMER') {
+      setEmail('demo@eventhub.com');
+      setPassword('Password123!');
+    } else {
+      setEmail('vendor@eventhub.com');
+      setPassword('Password123!');
+    }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2><LogIn size={24} /> Login to EventHub</h2>
-        {error && <div className="error-alert">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email or Username</label>
-            <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <div className="container" style={{ padding: '60px 20px', maxWidth: '480px' }}>
+      <div className="card" style={{ padding: '36px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+            <Calendar size={26} />
           </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          <button type="submit" className="btn-primary btn-block">Sign In</button>
-        </form>
+          <h1 style={{ fontSize: '1.8rem', marginBottom: '6px' }}>Login to EventHub</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+            Plan Smart. Spend Smart. Celebrate Better.
+          </p>
+        </div>
 
-        <div className="demo-shortcuts">
-          <p>Quick Demo Logins:</p>
-          <div className="btn-group">
-            <button type="button" onClick={() => handleDemoFill('demo@eventhub.com', 'password123')} className="btn-outline">
-              <UserCheck size={14} /> Customer Demo
+        {/* 1-Click Demo Accounts Selector */}
+        <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '12px', borderRadius: '10px', marginBottom: '20px' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+            1-Click Demo Credentials:
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => handleDemoFill('CUSTOMER')}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: '0.78rem', padding: '6px' }}
+            >
+              Demo Customer
             </button>
-            <button type="button" onClick={() => handleDemoFill('vendor@eventhub.com', 'password123')} className="btn-outline">
-              <UserCheck size={14} /> Vendor Demo
+            <button
+              type="button"
+              onClick={() => handleDemoFill('VENDOR')}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: '0.78rem', padding: '6px' }}
+            >
+              Demo Vendor
             </button>
           </div>
         </div>
 
-        <p className="auth-footer">
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
+        {errorMessage && (
+          <div className="alert alert-danger" style={{ marginBottom: '16px' }}>
+            {errorMessage}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="email"
+                className="form-control"
+                placeholder="name@domain.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary btn-block btn-lg"
+            style={{ marginTop: '8px', marginBottom: '16px' }}
+          >
+            {loading ? 'Authenticating...' : 'Sign In'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+          Don't have an account? <Link to="/register" style={{ color: 'var(--primary)', fontWeight: '700' }}>Register here</Link>
+        </div>
       </div>
     </div>
   );
-}
+};

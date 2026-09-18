@@ -1,12 +1,12 @@
 -- ============================================================
--- EventHub Database Schema (MySQL 8)
+-- EventHub Database Schema (MySQL)
 -- "Plan Smart. Spend Smart. Celebrate Better."
--- 10 Normalized Tables
 -- ============================================================
+
 CREATE DATABASE IF NOT EXISTS eventhub_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE eventhub_db;
 
--- 1. Users Table (Role-Based: CUSTOMER, VENDOR, ADMIN)
+-- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 2. Vendors Table (Business profiles & tier-2/3 categories)
+-- 2. Vendors Table
 CREATE TABLE IF NOT EXISTS vendors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS vendors (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- 3. Venues Table (Guest capacity, halls, and guest rooms)
+-- 3. Venues Specific Table (For Capacity, Halls & Rooms)
 CREATE TABLE IF NOT EXISTS venues (
     id INT AUTO_INCREMENT PRIMARY KEY,
     vendor_id INT NOT NULL UNIQUE,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS vendor_services (
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 );
 
--- 5. Events Table (Event blueprint & dynamic budget tracker)
+-- 5. Events Table
 CREATE TABLE IF NOT EXISTS events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS events (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 6. Event Vendors Association (Selected vendors in an event plan)
+-- 6. Event Vendors Association (Custom Event Plan selections)
 CREATE TABLE IF NOT EXISTS event_vendors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     event_id INT NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS event_vendors (
     UNIQUE KEY unique_event_category (event_id, category)
 );
 
--- 7. Bookings Table (20% advance & 80% remaining tracking)
+-- 7. Bookings Table
 CREATE TABLE IF NOT EXISTS bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     booking_reference VARCHAR(50) NOT NULL UNIQUE,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 );
 
--- 8. Payments Table (Simulated transaction history)
+-- 8. Payments Table
 CREATE TABLE IF NOT EXISTS payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
 
--- 9. Refunds Table (Cancellation policy & refund reference)
+-- 9. Refunds Table
 CREATE TABLE IF NOT EXISTS refunds (
     id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL
 );
 
--- Performance Indexes
+-- Indexes for performance
 CREATE INDEX idx_vendors_city_category ON vendors(city, category);
 CREATE INDEX idx_bookings_user ON bookings(user_id);
 CREATE INDEX idx_bookings_vendor ON bookings(vendor_id);

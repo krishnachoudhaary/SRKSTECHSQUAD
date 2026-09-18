@@ -27,16 +27,16 @@ Traditional event directories merely list vendor contact numbers and leave users
 ```text
 User
  ↓
-React Frontend (React 18, React Router v6, Lucide Icons, Vite)
- ↓ [REST APIs with JWT Bearer Header]
-Node.js + Express.js Backend (REST APIs, Services, Controllers, Middleware)
- ↓ [mysql2 / Dual In-Memory Database Engine]
-MySQL Database (with built-in resilient In-Memory store fallback for instant zero-config launch)
+React Frontend (React 18, React Router, Modern CSS)
+ ↓ [REST APIs with JWT Header]
+Python + Flask Backend (Blueprints, Controllers, Services)
+ ↓ [SQLAlchemy / PyMySQL]
+MySQL Database (with instant SQLite evaluation fallback)
 ```
 
-- **Frontend**: React.js 18, Vite, React Router v6, Lucide Icons, pure responsive CSS3.
-- **Backend**: Node.js, Express.js, JWT (`jsonwebtoken`), `bcryptjs`, CORS.
-- **Database**: MySQL (DDL Schema & Seed scripts in `database/`) with automatic built-in zero-config store fallback.
+- **Frontend**: React.js 18, Vite, React Router v6, Lucide Icons, Modern CSS Design System.
+- **Backend**: Python 3.10+, Flask 3.0, Flask-JWT-Extended, Flask-CORS, SQLAlchemy 2.0.
+- **Database**: MySQL (DDL Schema & Seed scripts in `database/`) with auto-fallback for zero-config evaluation.
 - **Authentication**: JWT (JSON Web Tokens) with Role-Based Access Control (`CUSTOMER`, `VENDOR`, `ADMIN`).
 
 ---
@@ -45,7 +45,7 @@ MySQL Database (with built-in resilient In-Memory store fallback for instant zer
 
 ```text
 eventhub/
-├── client/                     # React Frontend (Vite)
+├── client/                     # React Frontend
 │   ├── public/
 │   ├── src/
 │   │   ├── assets/             # Brand graphics & event images
@@ -58,81 +58,79 @@ eventhub/
 │   │   ├── main.jsx
 │   │   └── index.css
 │   ├── package.json
-│   └── vite.config.js          # Configured with proxy to backend port 5001
+│   └── vite.config.js
 │
-├── server/                     # Node.js Express Backend
-│   ├── config/                 # db.js (Dual MySQL/In-memory store), jwt.js
-│   ├── controllers/            # authController, vendorController, eventController, bookingController, etc.
-│   ├── middleware/             # authMiddleware (JWT), roleMiddleware (RBAC), errorHandler
-│   ├── routes/                 # Express Routers (authRoutes, vendorRoutes, eventRoutes, etc.)
-│   ├── services/               # smartMatchService, budgetService, paymentService, refundService
-│   ├── database/               # seedData.js (15+ Tier-2/3 seed vendors)
-│   ├── app.js                  # Express App configuration & unified SPA serving
-│   ├── server.js               # Main Server entrypoint (Port 5001)
-│   └── package.json
+├── server/                     # Python Flask Backend
+│   ├── config/
+│   │   └── db_config.py        # Database pooling & config
+│   ├── controllers/            # auth_controller, vendor_controller, event_controller, booking_controller, etc.
+│   ├── middleware/             # auth_middleware (JWT), role_middleware (RBAC)
+│   ├── models/                 # models.py (SQLAlchemy ORM)
+│   ├── routes/                 # Flask Blueprints (auth_routes, vendor_routes, event_routes, etc.)
+│   ├── services/               # smart_match_service, budget_service, payment_service, refund_service, commission_service
+│   ├── utils/                  # helpers.py (UUID/Ref generators, response formatters)
+│   ├── database/
+│   │   └── db_init.py          # Auto-seeder and schema initializer
+│   ├── app.py                  # Main Flask entrypoint
+│   └── requirements.txt
 │
 ├── database/
 │   ├── schema.sql              # MySQL DDL table schema
-│   └── seed.sql                # 15+ Tier-2/3 vendor records & demo data
+│   ├── seed.sql                # 16+ Tier-2/3 vendor records & demo data
+│   └── README.md
 │
 ├── .env.example
-├── .env
-├── package.json                # Root scripts for single-command start/build
+├── .gitignore
 └── README.md
 ```
 
 ---
 
-## 🚀 Quick Setup & Installation (VS Code / Terminal)
+## 🚀 Quick Setup & Installation
 
-### Option 1: Unified Full-Stack Run (Recommended — Single Command)
-This builds the React frontend and starts the Express backend serving both the REST API and the React SPA on **http://localhost:5001**:
+### 1. Prerequisites
+- Node.js (v18+)
+- Python (v3.10+)
+- MySQL Server (optional; SQLite fallback runs automatically if MySQL is offline)
 
-```bash
-# 1. Install all dependencies for both client and server
-npm run install:all
-
-# 2. Build frontend assets
-npm run build:client
-
-# 3. Start unified application
-npm start
-```
-Open **http://localhost:5001** in your browser.
-
----
-
-### Option 2: Running Frontend & Backend Separately in VS Code
-
-Open two integrated terminals in VS Code (`Ctrl+\`` or `Cmd+\``):
-
-**Terminal 1 — Backend (Node.js Express):**
+### 2. Backend Setup
 ```bash
 cd server
-npm install
-npm start
-```
-> Server starts on **http://localhost:5001** with zero-config in-memory database fallback (no MySQL setup required).
 
-**Terminal 2 — Frontend (Vite React Dev Server):**
+# Create and activate Python virtual environment
+python3 -m venv venv
+source venv/bin/activate    # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the Flask backend (starts on port 5050)
+python app.py
+```
+
+### 3. Frontend Setup
 ```bash
 cd client
+
+# Install packages
 npm install
+
+# Start Vite React development server (starts on port 3000)
 npm run dev
 ```
-> Client starts on **http://localhost:3000** with automatic proxying to backend on port 5001.
+Open **http://localhost:3000** in your browser.
 
 ---
 
 ## 🔑 Demo Credentials
 
-| Role | Email / Username | Password | Purpose |
+| Role | Email | Password | Purpose |
 |---|---|---|---|
-| **Customer** | `demo@eventhub.com` | `password123` | Plan events, browse vendors, 20% advance booking, cancel & refund |
-| **Vendor** | `vendor@eventhub.com` | `password123` | Manage Patliputra Grand Palace profile, venue capacity, accept bookings, commission stats |
-| **Venue Demo** | `royalpalace@eventhub.com` | `password123` | Manage Royal Palace Hotel profile |
+| **Customer** | `demo@eventhub.com` | `Password123!` | Plan events, browse vendors, 20% advance booking, cancel & refund |
+| **Vendor** | `vendor@eventhub.com` | `Password123!` | Manage Patliputra Grand Palace profile, venue capacity, accept bookings, commission stats |
+| **Admin** | `admin@eventhub.com` | `Password123!` | Full platform administration |
 
-*(The login page also provides 1-click **Quick Demo Login** buttons for instant access).*
+*(The login page also provides 1-click Demo Fill buttons for instant testing).*
 
 ---
 

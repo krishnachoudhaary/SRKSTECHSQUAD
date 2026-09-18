@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState } from 'react';
+
 const CompareContext = createContext();
+
 export const CompareProvider = ({ children }) => {
   const [compareList, setCompareList] = useState([]);
+
   const toggleCompare = (vendor) => {
     setCompareList((prev) => {
       const exists = prev.some((v) => v.id === vendor.id);
@@ -16,13 +19,24 @@ export const CompareProvider = ({ children }) => {
       }
     });
   };
-  const removeFromCompare = (vendorId) => setCompareList((prev) => prev.filter((v) => v.id !== vendorId));
-  const clearCompare = () => setCompareList([]);
-  const isInCompare = (vendorId) => compareList.some((v) => v.id === vendorId);
+
+  const removeFromCompare = (vendorId) => {
+    setCompareList((prev) => prev.filter((v) => v.id !== vendorId));
+  };
+
+  const clearCompare = () => {
+    setCompareList([]);
+  };
+
+  const isInCompare = (vendorId) => {
+    return compareList.some((v) => v.id === vendorId);
+  };
+
   return (
     <CompareContext.Provider value={{ compareList, toggleCompare, removeFromCompare, clearCompare, isInCompare }}>
       {children}
     </CompareContext.Provider>
   );
 };
+
 export const useCompare = () => useContext(CompareContext);

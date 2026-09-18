@@ -74,7 +74,7 @@ export const VendorDetails = () => {
     );
   }
 
-  const inCompare = isInCompare ? isInCompare(vendor.id) : false;
+  const inCompare = isInCompare(vendor.id);
   const venue = vendor.venue_details;
   const currentPrice = selectedPackage ? selectedPackage.price : vendor.starting_price;
 
@@ -105,7 +105,7 @@ export const VendorDetails = () => {
             </div>
 
             <h1 style={{ fontSize: '2.4rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-              {vendor.business_name || vendor.name}
+              {vendor.business_name}
             </h1>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '0.92rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
@@ -113,14 +113,14 @@ export const VendorDetails = () => {
                 <MapPin size={16} color="#f59e0b" /> {vendor.address || vendor.city}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '700', color: '#b45309' }}>
-                <Star size={16} fill="#f59e0b" color="#f59e0b" /> {vendor.rating || 4.8} ({vendor.review_count || 12} Reviews)
+                <Star size={16} fill="#f59e0b" color="#f59e0b" /> {vendor.rating} ({vendor.review_count} Reviews)
               </span>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
-              onClick={() => toggleCompare && toggleCompare(vendor)}
+              onClick={() => toggleCompare(vendor)}
               className={`btn ${inCompare ? 'btn-accent' : 'btn-outline'}`}
             >
               <Scale size={16} /> {inCompare ? 'In Comparison' : 'Add to Compare'}
@@ -137,7 +137,7 @@ export const VendorDetails = () => {
           <div className="card">
             <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>About This Vendor</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              {vendor.description || 'Specialized professional event provider dedicated to high quality customer experiences.'}
+              {vendor.description}
             </p>
 
             {vendor.supported_event_types && (
@@ -233,7 +233,7 @@ export const VendorDetails = () => {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '1.25rem' }}>Verified Customer Reviews</h3>
-              <span style={{ fontWeight: '700', color: '#b45309' }}>★ {vendor.rating || 4.8} / 5.0</span>
+              <span style={{ fontWeight: '700', color: '#b45309' }}>★ {vendor.rating} / 5.0</span>
             </div>
 
             {vendor.reviews && vendor.reviews.length > 0 ? (
@@ -300,5 +300,3 @@ export const VendorDetails = () => {
     </div>
   );
 };
-
-export default VendorDetails;
