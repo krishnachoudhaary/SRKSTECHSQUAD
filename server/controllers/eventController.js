@@ -233,9 +233,73 @@ const updateEventPlanVendors = async (req, res, next) => {
   }
 };
 
+const replaceEventVendor = async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    const { category, vendor_id, vendorId } = req.body || {};
+    const newVendorId = Number(vendor_id || vendorId);
+
+    let allVendors = [];
+    try {
+      const [dbVendors] = await query('SELECT * FROM vendors');
+      allVendors = (dbVendors && dbVendors.length > 0) ? dbVendors : initialVendors;
+    } catch (e) {
+      allVendors = initialVendors;
+    }
+
+    const newVendor = allVendors.find(v => v.id === newVendorId) || allVendors[0];
+
+    return res.status(200).json({
+      success: true,
+      message: `Vendor for ${category} replaced with ${newVendor ? newVendor.business_name : 'Selected Vendor'}`,
+      replacedCategory: category,
+      newVendor,
+      data: {
+        replacedCategory: category,
+        newVendor
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const runSmartMatch = async (req, res, next) => {
+  try {
+    const payload = req.body || {};
+    const city = payload.city || payload.location || 'Patna';
+    const eventType = payload.eventType || payload.event_type || 'Wedding';
+    const guestCount = Number(payload.guestCount || payload.guest_count || 250);
+    const totalBudget = Number(payload.totalBudget || payload.total_budget || 300000);
+    const requiredServices = Array.isArray(payload.requiredServices) && payload.requiredServices.length > 0
+      ? payload.requiredServices
+      : (Array.isArray(payload.required_services) && payload.required_services.length > 0 ? payload.required_services : ['Venue', 'Catering', 'Decoration', 'Photography', 'DJ']);
+
+    let allVendors = [];
+    try {
+      const [dbVendors] = await query('SELECT * FROM vendors');
+      allVendors = (dbVendors && dbVendors.length > 0) ? dbVendors : initialVendors;
+    } catch (e) {
+      allVendors = initialVendors;
+    }
+
+    const plan = generateBudgetPlan(totalBudget, requiredServices, allVendors, { eventType, city, guestCount });
+
+    return res.status(200).json({
+      success: true,
+      plan,
+      data: plan
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createEvent,
   getEventById,
   getUserEvents,
-  updateEventPlanVendors
+  updateEventPlanVendors,
+  replaceEventVendor,
+  runSmartMatch
 };

@@ -3,6 +3,7 @@ const router = express.Router();
 const reviewController = require('../controllers/reviewController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+router.get('/vendor/:vendorId', reviewController.getVendorReviews);
 router.get('/:vendorId', reviewController.getVendorReviews);
 router.post('/', (req, res, next) => {
   // Optional auth

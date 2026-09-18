@@ -3,6 +3,7 @@ const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 
 router.post('/demo', paymentController.processPayment);
+router.get('/booking/:bookingId', paymentController.getPaymentByBookingId);
 router.get('/:bookingId', paymentController.getPaymentByBookingId);
 
 module.exports = router;

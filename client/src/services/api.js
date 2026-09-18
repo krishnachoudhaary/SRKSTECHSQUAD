@@ -17,14 +17,23 @@ const request = async (endpoint, options = {}) => {
       headers,
     });
 
-    const data = await response.json().catch(() => ({}));
+    const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      const errorMsg = data.message || `Request failed with status ${response.status}`;
+      const errorMsg = body.message || `Request failed with status ${response.status}`;
       return { success: false, message: errorMsg, status: response.status, data: null };
     }
 
-    return data;
+    if (body.data !== undefined && body.data !== null) {
+      return body;
+    }
+
+    return {
+      success: body.success !== undefined ? body.success : true,
+      message: body.message || 'Success',
+      data: body,
+      ...body
+    };
   } catch (error) {
     return {
       success: false,

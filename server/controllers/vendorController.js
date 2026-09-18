@@ -244,7 +244,63 @@ const updateVendorProfile = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: 'Vendor profile updated successfully.',
-      vendor
+      vendor,
+      data: vendor
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const compareVendors = async (req, res, next) => {
+  try {
+    const { vendor_ids, vendorIds } = req.body || {};
+    const ids = (vendor_ids || vendorIds || []).map(Number);
+
+    if (!ids || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a list of vendor IDs to compare.'
+      });
+    }
+
+    let allVendors = [];
+    try {
+      const [dbVendors] = await query('SELECT * FROM vendors');
+      allVendors = (dbVendors && dbVendors.length > 0) ? dbVendors : initialVendors;
+    } catch (e) {
+      allVendors = initialVendors;
+    }
+
+    const matched = allVendors.filter(v => ids.includes(v.id));
+
+    const comparisonList = matched.map(v => ({
+      id: v.id,
+      business_name: v.business_name,
+      category: v.category,
+      city: v.city,
+      starting_price: Number(v.starting_price || 0),
+      price_unit: v.price_unit || 'per event',
+      rating: Number(v.rating || 0),
+      review_count: Number(v.review_count || 0),
+      is_verified: !!v.is_verified,
+      max_capacity: v.max_capacity || 300,
+      main_hall_capacity: v.main_hall_capacity || 200,
+      rooms_available: v.rooms_available || 8,
+      lawn_available: v.lawn_available !== false,
+      catering_policy: v.catering_policy || 'In-house & Outside Allowed',
+      ac_available: v.ac_available !== false,
+      facilities: v.facilities || 'AC, Power Backup, Valet Parking, Decor Support',
+      services_count: 5,
+      supported_event_types: v.supported_event_types || 'Wedding, Reception, Birthday, Corporate'
+    }));
+
+    return res.status(200).json({
+      success: true,
+      comparison: comparisonList,
+      data: {
+        comparison: comparisonList
+      }
     });
   } catch (err) {
     next(err);
@@ -255,5 +311,6 @@ module.exports = {
   getAllVendors,
   getVendorById,
   getVendorForCurrentUser,
-  updateVendorProfile
+  updateVendorProfile,
+  compareVendors
 };
