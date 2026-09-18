@@ -118,7 +118,7 @@ npm install
 # Start Vite React development server (starts on port 3000)
 npm run dev
 ```
-Open **http://localhost:3000** in your browser.
+Open **http://localhost:5001** in your browser.
 
 ---
 
