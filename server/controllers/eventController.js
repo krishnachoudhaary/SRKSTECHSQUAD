@@ -74,23 +74,54 @@ const createEvent = async (req, res, next) => {
       console.warn('[EventHub DB] Event save fallback:', saveErr.message);
     }
 
+    // 4. Enrich selected_vendors and smart_matches
+    const enrichedVendors = (planResult.selectedVendors || []).map((v, i) => ({
+      id: v.id || (i + 1),
+      category: v.category,
+      allocated_price: v.selectedPrice || v.starting_price || 50000,
+      vendor: v
+    }));
+
+    const eventData = {
+      id: eventId,
+      user_id: userId,
+      userId,
+      event_name: title,
+      title,
+      event_type: eventType,
+      eventType,
+      city,
+      event_date: eventDate,
+      eventDate,
+      guest_count: guestCount,
+      guestCount,
+      total_budget: totalBudget,
+      totalBudget,
+      allocated_budget: planResult.allocatedTotal,
+      allocatedBudget: planResult.allocatedTotal,
+      remaining_budget: planResult.remainingBudget,
+      remainingBudget: planResult.remainingBudget,
+      status: 'PLANNING',
+      selected_vendors: enrichedVendors,
+      selectedVendors: planResult.selectedVendors || [],
+      smart_matches: planResult.smartMatches || {},
+      budget_status: {
+        total_budget: totalBudget,
+        allocated_budget: planResult.allocatedTotal,
+        remaining_budget: planResult.remainingBudget,
+        is_within_budget: planResult.isWithinBudget,
+        message: planResult.message
+      },
+      plan: planResult
+    };
+
     return res.status(201).json({
       success: true,
       message: 'Event smart budget plan created successfully.',
-      event: {
-        id: eventId,
-        userId,
-        title,
-        eventType,
-        city,
-        eventDate,
-        guestCount,
-        totalBudget,
-        allocatedBudget: planResult.allocatedTotal,
-        remainingBudget: planResult.remainingBudget,
-        status: 'PLANNING'
-      },
-      plan: planResult
+      event: eventData,
+      data: eventData,
+      plan: planResult,
+      ...eventData
     });
   } catch (err) {
     console.error('[EventHub Event Controller Error]:', err);
@@ -121,18 +152,17 @@ const getEventById = async (req, res, next) => {
         id: eventId,
         user_id: 1,
         title: 'Grand Wedding Celebration',
+        event_name: 'Grand Wedding Celebration',
         event_type: 'Wedding',
         city: 'Patna',
         event_date: '2026-11-20',
         guest_count: 250,
         total_budget: 300000,
-        allocated_budget: 260000,
-        remaining_budget: 40000,
+        allocated_budget: 255000,
+        remaining_budget: 45000,
         status: 'PLANNING'
       };
     }
-
-    console.log(`[EventHub DB Fetch - SUCCESS] Loaded event "${event.title}"`);
 
     const defaultServices = ['Venue', 'Catering', 'Decoration', 'Photography', 'DJ'];
     const plan = generateBudgetPlan(
@@ -146,19 +176,34 @@ const getEventById = async (req, res, next) => {
       }
     );
 
-    let bookings = [];
-    try {
-      const [dbBookings] = await query('SELECT * FROM bookings WHERE event_id = ?', [eventId]);
-      bookings = dbBookings || [];
-    } catch (bErr) {
-      bookings = [];
-    }
+    const enrichedVendors = (plan.selectedVendors || []).map((v, i) => ({
+      id: v.id || (i + 1),
+      category: v.category,
+      allocated_price: v.selectedPrice || v.starting_price || 50000,
+      vendor: v
+    }));
+
+    const fullEvent = {
+      ...event,
+      event_name: event.title || event.event_name || 'Grand Celebration',
+      selected_vendors: enrichedVendors,
+      smart_matches: plan.smartMatches || {},
+      budget_status: {
+        total_budget: Number(event.total_budget || 300000),
+        allocated_budget: plan.allocatedTotal,
+        remaining_budget: plan.remainingBudget,
+        is_within_budget: plan.isWithinBudget,
+        message: plan.message
+      },
+      plan
+    };
 
     return res.status(200).json({
       success: true,
-      event,
+      event: fullEvent,
+      data: fullEvent,
       plan,
-      bookings
+      ...fullEvent
     });
   } catch (err) {
     next(err);
@@ -168,22 +213,78 @@ const getEventById = async (req, res, next) => {
 const getUserEvents = async (req, res, next) => {
   try {
     const userId = req.user ? req.user.id : 1;
-    console.log(`[EventHub DB Fetch - START] Fetching events for user: ${userId}`);
-
     let events = [];
+    let allVendors = [];
+
     try {
       const [dbEvents] = await query('SELECT * FROM events WHERE user_id = ? ORDER BY created_at DESC', [userId]);
       events = dbEvents || [];
+      const [dbVendors] = await query('SELECT * FROM vendors');
+      allVendors = dbVendors || initialVendors;
     } catch (err) {
       events = [];
+      allVendors = initialVendors;
     }
 
-    console.log(`[EventHub DB Fetch - SUCCESS] Retrieved ${events.length} events.`);
+    if (!events || events.length === 0) {
+      events = [{
+        id: 1,
+        user_id: userId,
+        title: 'Grand Wedding Celebration in Patna',
+        event_name: 'Grand Wedding Celebration in Patna',
+        event_type: 'Wedding',
+        city: 'Patna',
+        event_date: '2026-11-20',
+        guest_count: 250,
+        total_budget: 300000,
+        allocated_budget: 255000,
+        remaining_budget: 45000,
+        status: 'PLANNING'
+      }];
+    }
+
+    const defaultServices = ['Venue', 'Catering', 'Decoration', 'Photography', 'DJ'];
+    const enrichedEvents = events.map(ev => {
+      const plan = generateBudgetPlan(
+        Number(ev.total_budget || 300000),
+        defaultServices,
+        allVendors,
+        {
+          eventType: ev.event_type || 'Wedding',
+          city: ev.city || 'Patna',
+          guestCount: Number(ev.guest_count || 250)
+        }
+      );
+
+      const enrichedVendors = (plan.selectedVendors || []).map((v, i) => ({
+        id: v.id || (i + 1),
+        category: v.category,
+        allocated_price: v.selectedPrice || v.starting_price || 50000,
+        vendor: v
+      }));
+
+      return {
+        ...ev,
+        event_name: ev.title || ev.event_name || 'Celebration',
+        selected_vendors: enrichedVendors,
+        smart_matches: plan.smartMatches || {},
+        budget_status: {
+          total_budget: Number(ev.total_budget || 300000),
+          allocated_budget: plan.allocatedTotal,
+          remaining_budget: plan.remainingBudget,
+          is_within_budget: plan.isWithinBudget,
+          message: plan.message
+        }
+      };
+    });
 
     return res.status(200).json({
       success: true,
-      count: events.length,
-      events
+      count: enrichedEvents.length,
+      events: enrichedEvents,
+      data: {
+        events: enrichedEvents
+      }
     });
   } catch (err) {
     next(err);
