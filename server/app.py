@@ -4,6 +4,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from routes.event_routes import event_bp
 from routes.budget_routes import budget_bp
+from routes.review_routes import review_bp
 
 from config.db_config import db, get_database_uri
 from database.db_init import seed_database
@@ -33,6 +34,7 @@ app.register_blueprint(event_bp, url_prefix='/api/events')
 app.register_blueprint(budget_bp, url_prefix='/api/budget')
 app.register_blueprint(booking_bp, url_prefix='/api/bookings')
 app.register_blueprint(payment_bp, url_prefix='/api/payments')
+app.register_blueprint(review_bp, url_prefix='/api/reviews')
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
