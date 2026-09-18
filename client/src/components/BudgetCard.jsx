@@ -43,3 +43,5 @@ export const BudgetCard = ({ totalBudget, allocatedBudget, remainingBudget, isWi
     </div>
   );
 };
+
+export default BudgetCard;

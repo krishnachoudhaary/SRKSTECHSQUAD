@@ -4,6 +4,8 @@ export const formatCurrency = (amount) => {
   if (isNaN(num)) return '₹0';
   return '₹' + num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
 };
+
+export const formatINR = formatCurrency;
 export const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   try {

@@ -47,3 +47,5 @@ export const VendorCard = ({ vendor }) => {
     </div>
   );
 };
+
+export default VendorCard;

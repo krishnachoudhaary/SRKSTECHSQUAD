@@ -105,3 +105,5 @@ export const EventPlanner = () => {
     </div>
   );
 };
+
+export default EventPlanner;

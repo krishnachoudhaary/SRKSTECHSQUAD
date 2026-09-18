@@ -45,3 +45,5 @@ export const DemoPayment = () => {
     </div>
   );
 };
+
+export default DemoPayment;

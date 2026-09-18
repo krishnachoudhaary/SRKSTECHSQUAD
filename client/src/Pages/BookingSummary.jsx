@@ -55,3 +55,5 @@ export const BookingSummary = () => {
     </div>
   );
 };
+
+export default BookingSummary;

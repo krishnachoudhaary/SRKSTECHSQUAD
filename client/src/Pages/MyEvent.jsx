@@ -49,3 +49,5 @@ export const MyEvent = () => {
   );
 };
 
+export default MyEvent;
+

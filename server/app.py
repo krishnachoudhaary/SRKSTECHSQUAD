@@ -29,12 +29,8 @@ with app.app_context():
 # Register Blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(vendor_bp, url_prefix='/api/vendors')
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(vendor_bp, url_prefix='/api/vendors')
-app.register_blueprint(booking_bp, url_prefix='/api/bookings')
-app.register_blueprint(payment_bp, url_prefix='/api/payments')
 app.register_blueprint(event_bp, url_prefix='/api/events')
-app.register_blueprint(budget_bp, url_prefix='/api/budget')        
+app.register_blueprint(budget_bp, url_prefix='/api/budget')
 app.register_blueprint(booking_bp, url_prefix='/api/bookings')
 app.register_blueprint(payment_bp, url_prefix='/api/payments')
 
@@ -43,6 +39,6 @@ def health_check():
     return success_response({"status": "healthy", "service": "EventHub Tier-2/3 API"})
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5050))
+    port = int(os.getenv('PORT', 5001))
     print(f"🚀 EventHub Flask Backend running on http://127.0.0.1:{port}")
     app.run(host='0.0.0.0', port=port, debug=True)

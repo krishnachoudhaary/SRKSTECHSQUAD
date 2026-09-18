@@ -25,3 +25,5 @@ export const BookingConfirmation = () => {
     </div>
   );
 };
+
+export default BookingConfirmation;
