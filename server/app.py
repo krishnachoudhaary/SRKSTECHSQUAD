@@ -2,6 +2,8 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
+from routes.event_routes import event_bp
+from routes.budget_routes import budget_bp
 
 from config.db_config import db, get_database_uri
 from database.db_init import seed_database
@@ -27,6 +29,12 @@ with app.app_context():
 # Register Blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(vendor_bp, url_prefix='/api/vendors')
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(vendor_bp, url_prefix='/api/vendors')
+app.register_blueprint(booking_bp, url_prefix='/api/bookings')
+app.register_blueprint(payment_bp, url_prefix='/api/payments')
+app.register_blueprint(event_bp, url_prefix='/api/events')
+app.register_blueprint(budget_bp, url_prefix='/api/budget')        
 app.register_blueprint(booking_bp, url_prefix='/api/bookings')
 app.register_blueprint(payment_bp, url_prefix='/api/payments')
 
