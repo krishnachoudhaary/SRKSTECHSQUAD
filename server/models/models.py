@@ -98,6 +98,28 @@ class Event(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
+class EventVendor(db.Model):
+    __tablename__ = 'event_vendors'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id', ondelete='CASCADE'), nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id', ondelete='CASCADE'), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    cost = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    event = db.relationship('Event', backref='event_vendors', lazy=True)
+    vendor = db.relationship('Vendor', backref='event_vendors', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'event_id': self.event_id,
+            'vendor_id': self.vendor_id,
+            'category': self.category,
+            'cost': self.cost,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
 class Booking(db.Model):
     __tablename__ = 'bookings'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
