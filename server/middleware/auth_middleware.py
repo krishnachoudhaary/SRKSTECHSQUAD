@@ -33,3 +33,30 @@ def token_required(f):
         
         return f(*args, **kwargs)
     return decorated
+
+def jwt_required_custom(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return error_response("Authentication token is missing", 401)
+        
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return error_response("Invalid authorization format. Expected: Bearer <token>", 401)
+
+        token = parts[1]
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            user_id = payload.get('user_id') or payload.get('id')
+            user = User.query.get(user_id)
+            if not user:
+                return error_response("User not found or deactivated", 401)
+            request.current_user = user
+        except jwt.ExpiredSignatureError:
+            return error_response("Token has expired. Please log in again", 401)
+        except jwt.InvalidTokenError:
+            return error_response("Invalid or corrupted token", 401)
+        
+        return f(user, *args, **kwargs)
+    return decorated
